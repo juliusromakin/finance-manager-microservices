@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # 1. Database per il Transaction Service
+  postgres-transactions:
+    image: postgres:15-alpine
+    container_name: postgres-transactions
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: transactions_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata-transactions:/var/lib/postgresql/data
+    networks:
+      - finance-net
+
+  # 2. Database per il Budget Service
+  postgres-budgets:
+    image: postgres:15-alpine
+    container_name: postgres-budgets
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: budgets_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata-budgets:/var/lib/postgresql/data
+    networks:
+      - finance-net
+
+  # 3. Cache / Sessioni (Redis)
+  redis:
+    image: redis:7-alpine
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+    networks:
+      - finance-net
+
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq-broker
+    ports:
+      - "5672:5672"   # Porta per la comunicazione dei servizi
+      - "15672:15672" # Dashboard Web di RabbitMQ (user/pass: guest/guest)
+    networks:
+      - finance-net
+
+networks:
+  finance-net:
+    driver: bridge
+
+volumes:
+  pgdata-transactions:
+  pgdata-budgets:
